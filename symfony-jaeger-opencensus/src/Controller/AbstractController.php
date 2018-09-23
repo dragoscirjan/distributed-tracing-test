@@ -2,11 +2,13 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
 use Symfony\Component\Routing\Annotation\Route;
 
-class AbstractController extends AbstractController
+class AbstractController extends BaseController
 {
+    // public __contruct() {}
+
     /**
      * @Route("/abstract", name="abstract")
      */

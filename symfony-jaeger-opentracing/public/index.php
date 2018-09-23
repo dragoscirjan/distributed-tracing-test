@@ -7,6 +7,16 @@ use Symfony\Component\HttpFoundation\Request;
 
 require __DIR__.'/../vendor/autoload.php';
 
+/*******************************************************************************
+ *  Symfony Span
+ */
+use OpenTracing\Formats;
+use OpenTracing\GlobalTracer;
+
+$symfonySpan = GlobalTracer::globalTracer()->startSpan('symfony');
+die(var_dump($symfonySpan));
+/******************************************************************************/
+
 // The check is to ensure we don't use .env in production
 if (!isset($_SERVER['APP_ENV']) && !isset($_ENV['APP_ENV'])) {
     if (!class_exists(Dotenv::class)) {
@@ -37,3 +47,10 @@ $request = Request::createFromGlobals();
 $response = $kernel->handle($request);
 $response->send();
 $kernel->terminate($request, $response);
+
+/*******************************************************************************
+ *  Symfony Span
+ */
+$symfonySpan->finish();
+GlobalTracer::globalTracer()->flush();
+/******************************************************************************/

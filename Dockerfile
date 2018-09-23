@@ -22,4 +22,4 @@ WORKDIR /home/code
 
 EXPOSE 8000
 
-CMD [ "sh", "/home/code/run-php.sh" ]
+CMD [ "sh", "/home/code/run-php-server.sh" ]
