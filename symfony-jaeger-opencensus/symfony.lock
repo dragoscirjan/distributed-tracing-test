@@ -116,6 +116,9 @@
     "opencensus/opencensus-exporter-jaeger": {
         "version": "v0.1.0"
     },
+    "opentracing/opentracing": {
+        "version": "0.3.2"
+    },
     "phpdocumentor/reflection-common": {
         "version": "1.0.1"
     },
