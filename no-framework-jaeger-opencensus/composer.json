@@ -1,0 +1,7 @@
+{
+    "require": {
+        "opencensus/opencensus": "~0.2",
+        "opencensus/opencensus-exporter-jaeger": "^0.1.0",
+        "psr/log": "^1.0"
+    }
+}
