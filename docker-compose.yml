@@ -15,48 +15,39 @@ services:
       - "9411:9411"
     restart: on-failure
 
-  # jaeger
-  distributed-tracing-test-mysql: 
-    environment:
-      MYSQL_ROOT_PASSWORD: weltest
-      MYSQL_DATABASE: test
-      MYSQL_USER: test
-      MYSQL_PASSWORD: weltest
-    image: mysql:5.7
-    restart: on-failure
-  
-  # # php server - symfony + jaeger + opentracing
-  # distributed-tracing-test-php:
-  #   # entrypoint: tail -f /dev/null
-  #   depends_on:
-  #     - distributed-tracing-test-jaeger
-  #   build:
-  #     context: .
-  #   links:
-  #     - distributed-tracing-test-jaeger
-  #   ports:
-  #     - "8000:8000"
+  # # mysql
+  # distributed-tracing-test-mysql: 
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: weltest
+  #     MYSQL_DATABASE: test
+  #     MYSQL_USER: test
+  #     MYSQL_PASSWORD: weltest
+  #   image: mysql:5.7
   #   restart: on-failure
-  #   volumes:
-  #     - type: bind
-  #       source: ./symfony-jaeger-opentracing
-  #       target: /home/code
 
-  # php server - symfony + jaeger + opencensus
+  # php server
+  # https://gist.github.com/chadrien/c90927ec2d160ffea9c4 (xdebug)
+  # https://stackoverflow.com/questions/17157721/how-to-get-a-docker-containers-ip-address-from-the-host/34863088 (get container ip - thus docker net if)
   distributed-tracing-test-php:
     # entrypoint: tail -f /dev/null
+    environment:
+      XDEBUG_CONFIG: remote_host=10.97.16.193
     depends_on:
       - distributed-tracing-test-jaeger
-      - distributed-tracing-test-mysql
+      # - distributed-tracing-test-mysql
     build:
-      context: .
+      context: ./$TEST_CASE_FOLDER
+      dockerfile: Dockerfile
     links:
       - distributed-tracing-test-jaeger
-      - distributed-tracing-test-mysql
+      # - distributed-tracing-test-mysql
     ports:
       - "8000:8000"
     restart: on-failure
     volumes:
       - type: bind
-        source: ./symfony-jaeger-opencensus
+        source: ./$TEST_CASE_FOLDER
         target: /home/code
+      - type: bind
+        source: ./xdebug.ini
+        target: /usr/local/etc/php/conf.d/xdebug.ini
