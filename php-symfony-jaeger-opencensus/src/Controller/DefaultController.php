@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+
+use OpenCensus\Trace\Integrations\Guzzle\Middleware;
 use OpenCensus\Trace\Tracer;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,18 +15,20 @@ class DefaultController extends AbstractController {
 
     public function index() {
 
-        $span = Tracer::startSpan(['name' => 'expensive-operation-1']);
+        $data = [];
+        try {
+            $data = $this->fetchPage();
+        } catch (\Exception $e) {  }
 
+        $span = Tracer::startSpan(['name' => 'twig.generate']);
         $scope = Tracer::withSpan($span);
-
-        $result = Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
-
+        $result = new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
         try {
             $result = $this->render('abstract/index.html.twig', [
-                'controller_name' => get_class($this)
+                'controller_name' => get_class($this),
+                'data' => $data
             ]);
         } finally {
-            var_dump($scope);
             $scope->close();
         }
 
@@ -30,19 +36,36 @@ class DefaultController extends AbstractController {
     }
 
     public function fetch() {
-
-        $span = Tracer::startSpan(['name' => 'expensive-operation-1']);
-
-        $scope = Tracer::withSpan($span);
         try {
-            usleep(5000);
-        } finally {
-            $scope->close();
-        }
+            return $this->getGuzzleClient()->get('https://jsonplaceholder.typicode.com/users')->getBody();
+        } catch (\Exception $e) {
+            return '[]';
+        } 
+    }
 
-        return new Response(json_encode([
-            'message' => 'This is a test message!'
-        ]));
+    /**
+     * Undocumented function
+     * @see https://github.com/census-instrumentation/opencensus-php/blob/master/docs/content/integrating-guzzle.md
+     * @return void
+     */
+    private function getGuzzleClient() {
+        $stack = new HandlerStack();
+        $stack->setHandler(\GuzzleHttp\choose_handler());
+        $stack->push(new Middleware());
+        $client = new Client(['handler' => $stack]);
+        return $client;
+    }
+
+    private function fetchPage() {
+        // try {
+        //     return json_decode($this->getGuzzleClient()->get('http://distributed-tracing-test-py:8099')->getBody());
+        // } catch (\Exception $e) {  }
+
+        try {
+            return json_decode($this->getGuzzleClient()->get($this->generateUrl('fetch'))->getBody());
+        } catch (\Exception $e) {  }
+
+        return [];
     }
 
 }

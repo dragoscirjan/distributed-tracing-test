@@ -1,5 +1,6 @@
 FROM php:7.2-cli-alpine
 
+
 RUN mkdir /home/code \
     && addgroup code \
     && adduser -D -h /home/code -G code code \
@@ -30,10 +31,11 @@ RUN apk add autoconf alpine-sdk \
     && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && apk del alpine-sdk
 
+
 USER code
 
 WORKDIR /home/code
 
 EXPOSE 8000
 
-CMD [ "sh", "/home/code/run-php-server.sh" ]
+CMD [ "sh", "/home/code/run-server.sh" ]

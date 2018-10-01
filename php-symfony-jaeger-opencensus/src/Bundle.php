@@ -1,6 +1,7 @@
 <?php
 namespace App;
 
+// use OpenCensus\Trace\Propagator\HttpHeaderPropagator;
 use OpenCensus\Trace\Exporter\JaegerExporter;
 //use OpenCensus\Trace\Exporter\LoggerExporter;
 use OpenCensus\Trace\Integrations\Doctrine;
@@ -39,7 +40,7 @@ class Bundle extends BaseBundle
 
         // Start the request tracing for this request
 //         $exporter = new LoggerExporter(new MyLoger('traces'));
-        $exporter = new JaegerExporter('my-jaeger', [
+        $exporter = new JaegerExporter('my-jaeger-php', [
             'host' => 'distributed-tracing-test-jaeger'
         ]);
         Tracer::start($exporter);

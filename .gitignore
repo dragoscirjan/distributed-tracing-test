@@ -1,6 +1,10 @@
 .composer
 .md5
+.md5.php
+.md5.py
 composer.phar
+Dockerfile
+docker-compose.yml
 /vendor/
 
 # Commit your application's lock file https://getcomposer.org/doc/01-basic-usage.md#commit-your-composer-lock-file-to-version-control

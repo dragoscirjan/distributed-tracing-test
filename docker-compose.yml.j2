@@ -25,6 +25,7 @@ services:
   #   image: mysql:5.7
   #   restart: on-failure
 
+{%- if 'php-' in project.php %}
   # php server
   # https://gist.github.com/chadrien/c90927ec2d160ffea9c4 (xdebug)
   # https://stackoverflow.com/questions/17157721/how-to-get-a-docker-containers-ip-address-from-the-host/34863088 (get container ip - thus docker net if)
@@ -34,20 +35,40 @@ services:
       XDEBUG_CONFIG: remote_host=10.97.16.193
     depends_on:
       - distributed-tracing-test-jaeger
-      # - distributed-tracing-test-mysql
+      {% if 'py-' in project.py %}- distributed-tracing-test-py{% endif %}
     build:
-      context: ./$TEST_CASE_FOLDER
+      context: ./$TEST_CASE_FOLDER_PHP
       dockerfile: Dockerfile
     links:
       - distributed-tracing-test-jaeger
-      # - distributed-tracing-test-mysql
+      {% if 'py-' in project.py %}- distributed-tracing-test-py{% endif %}
     ports:
       - "8000:8000"
     restart: on-failure
     volumes:
       - type: bind
-        source: ./$TEST_CASE_FOLDER
+        source: ./$TEST_CASE_FOLDER_PHP
         target: /home/code
       - type: bind
         source: ./xdebug.ini
         target: /usr/local/etc/php/conf.d/xdebug.ini
+{% endif -%}
+
+{%- if 'py-' in project.py %}
+  # python server
+  distributed-tracing-test-py:
+    depends_on:
+      - distributed-tracing-test-jaeger
+    build:
+      context: ./$TEST_CASE_FOLDER_PY
+      dockerfile: Dockerfile
+    links:
+      - distributed-tracing-test-jaeger
+    ports:
+      - "8099:8099"
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./$TEST_CASE_FOLDER_PY
+        target: /home/code
+{% endif -%}

@@ -1,10 +1,16 @@
+{% if 'php-' in project -%}
 FROM php:7.2-cli-alpine
+{%- endif %}
+{% if 'python-' in project -%}
+FROM python:3.5-alpine
+{%- endif %}
 
 RUN mkdir /home/code \
     && addgroup code \
     && adduser -D -h /home/code -G code code \
     && chown code:code /home/code
 
+{% if 'php-' in project -%}
 RUN apk add --no-cache --virtual zlib-dev \
     && docker-php-ext-install -j$(nproc) mysqli pcntl pdo_mysql zip sockets
 
@@ -29,6 +35,18 @@ RUN apk add autoconf alpine-sdk \
     && echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && apk del alpine-sdk
+{%- endif %}
+{% if 'py-' in project -%}
+RUN pip install requests
+{% if 'cherrypy-' in project -%}
+
+RUN pip install cherrypy
+{%- endif %}
+{% if 'opencensus' in project -%}
+
+RUN pip install opencensus thrift
+{%- endif %}
+{%- endif %}
 
 USER code
 
@@ -36,4 +54,4 @@ WORKDIR /home/code
 
 EXPOSE 8000
 
-CMD [ "sh", "/home/code/run-php-server.sh" ]
+CMD [ "sh", "/home/code/run-server.sh" ]
