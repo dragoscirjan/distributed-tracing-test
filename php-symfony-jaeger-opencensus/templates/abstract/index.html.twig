@@ -16,9 +16,13 @@
         <li>Your controller at <code><a href="{{ 'src/Controller/AbstractController.php'|file_link(0) }}">src/Controller/AbstractController.php</a></code></li>
         <li>Your template at <code><a href="{{ 'templates/abstract/index.html.twig'|file_link(0) }}">templates/abstract/index.html.twig</a></code></li>
     </ul>
+    <table>
+        {% for user in data %}
+            <tr>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 </div>
-
-<script>
-    fetch('/fetch');
-</script>
 {% endblock %}

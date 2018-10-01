@@ -35,15 +35,36 @@ services:
       XDEBUG_CONFIG: remote_host=10.97.16.193
     depends_on:
       - distributed-tracing-test-jaeger
-      {% if 'py-' in project.py %}- distributed-tracing-test-py{% endif %}
     build:
       context: ./$TEST_CASE_FOLDER_PHP
       dockerfile: Dockerfile
     links:
       - distributed-tracing-test-jaeger
-      {% if 'py-' in project.py %}- distributed-tracing-test-py{% endif %}
+      - distributed-tracing-test-php2
+      {% if 'py-' in project.py %}- distributed-tracing-test-py2{% endif %}
     ports:
       - "8000:8000"
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./$TEST_CASE_FOLDER_PHP
+        target: /home/code
+      - type: bind
+        source: ./xdebug.ini
+        target: /usr/local/etc/php/conf.d/xdebug.ini
+
+  distributed-tracing-test-php2:
+    # entrypoint: tail -f /dev/null
+    environment:
+      XDEBUG_CONFIG: remote_host=10.97.16.193
+    depends_on:
+      - distributed-tracing-test-jaeger
+    build:
+      context: ./$TEST_CASE_FOLDER_PHP
+      dockerfile: Dockerfile
+    links:
+      - distributed-tracing-test-jaeger
+      # {% if 'py-' in project.py %}- distributed-tracing-test-py2{% endif %}
     restart: on-failure
     volumes:
       - type: bind
@@ -64,8 +85,24 @@ services:
       dockerfile: Dockerfile
     links:
       - distributed-tracing-test-jaeger
+      {% if 'php-' in project.php %}- distributed-tracing-test-php2{% endif %}
+      - distributed-tracing-test-py2
     ports:
       - "8099:8099"
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./$TEST_CASE_FOLDER_PY
+        target: /home/code
+
+  distributed-tracing-test-py2:
+    depends_on:
+      - distributed-tracing-test-jaeger
+    build:
+      context: ./$TEST_CASE_FOLDER_PY
+      dockerfile: Dockerfile
+    links:
+      - distributed-tracing-test-jaeger
     restart: on-failure
     volumes:
       - type: bind

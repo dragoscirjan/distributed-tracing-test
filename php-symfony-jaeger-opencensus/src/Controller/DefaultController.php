@@ -16,9 +16,9 @@ class DefaultController extends AbstractController {
     public function index() {
 
         $data = [];
-        try {
+        // try {
             $data = $this->fetchPage();
-        } catch (\Exception $e) {  }
+        // } catch (\Exception $e) {  }
 
         $span = Tracer::startSpan(['name' => 'twig.generate']);
         $scope = Tracer::withSpan($span);
@@ -36,11 +36,13 @@ class DefaultController extends AbstractController {
     }
 
     public function fetch() {
+        // die(var_dump(getallheaders()));
         try {
-            return $this->getGuzzleClient()->get('https://jsonplaceholder.typicode.com/users')->getBody();
+            $data = $this->getGuzzleClient()->get('https://jsonplaceholder.typicode.com/users')->getBody();
         } catch (\Exception $e) {
-            return '[]';
-        } 
+            $data = '[]';
+        }
+        return new Response($data, Response::HTTP_OK);
     }
 
     /**
@@ -58,11 +60,15 @@ class DefaultController extends AbstractController {
 
     private function fetchPage() {
         // try {
-        //     return json_decode($this->getGuzzleClient()->get('http://distributed-tracing-test-py:8099')->getBody());
+        //     $result = $this->getGuzzleClient()->get('http://distributed-tracing-test-py2:8099');
+        //     // die($result->getBody());
+        //     return json_decode($result->getBody());
         // } catch (\Exception $e) {  }
 
         try {
-            return json_decode($this->getGuzzleClient()->get($this->generateUrl('fetch'))->getBody());
+            $result = $this->getGuzzleClient()->get('http://distributed-tracing-test-php2:8000/fetch');
+            // die(var_dump($result->getHeaders()));
+            return json_decode($result->getBody());
         } catch (\Exception $e) {  }
 
         return [];

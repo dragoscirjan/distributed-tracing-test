@@ -40,7 +40,7 @@ class Bundle extends BaseBundle
 
         // Start the request tracing for this request
 //         $exporter = new LoggerExporter(new MyLoger('traces'));
-        $exporter = new JaegerExporter('my-jaeger-php', [
+        $exporter = new JaegerExporter('my-jaeger', [
             'host' => 'distributed-tracing-test-jaeger'
         ]);
         Tracer::start($exporter);
