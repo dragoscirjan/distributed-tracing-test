@@ -1,34 +1,21 @@
 <?php
 
-use OpenCensus\Trace\Exporter\Jaeger\SpanConverter as BaseSpanConverter;
+namespace App\OpenCensus\Trace\Exporter\Jaeger;
 
-const MAX_INT_64s = '9223372036854775807';
+require_once __DIR__ . '/../../../../../vendor/opencensus/opencensus-exporter-jaeger/src/Thrift/Types.php';
 
-function gmp_half_uuid_to_int64s($hex) {
-    $dec = 0;
-    $len = strlen($hex);
-    for ($i = 1; $i <= $len; $i++) {
-        $dec = gmp_add($dec, gmp_mul(strval(hexdec($hex[$i - 1])), gmp_pow('16', strval($len - $i))));
-    }
-    if (gmp_cmp($dec, MAX_INT_64s) > 0) {
-        $dec = gmp_sub(gmp_and($dec, MAX_INT_64s), gmp_add(MAX_INT_64s, '1'));
-    }
-    return intval($dec);
-}
+use OpenCensus\Trace\Annotation;
+use OpenCensus\Trace\MessageEvent;
+use OpenCensus\Trace\SpanData;
+use OpenCensus\Trace\TimeEvent;
 
-function bc_half_uuid_to_int64s($hex) {
-    $dec = 0;
-    $len = strlen($hex);
-    for ($i = 1; $i <= $len; $i++) {
-        $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
-    }
-    if (bccomp($dec, MAX_INT_64s) > 0) {
-        $dec = bcsub(bcsub($dec, MAX_INT_64s), bcadd(MAX_INT_64s, '2'));
-    }
-    return intval($dec);
-}
+use Jaeger\Thrift\Log;
+use Jaeger\Thrift\Span;
+use Jaeger\Thrift\Tag;
+use Jaeger\Thrift\TagType;
 
-class SpanConverter extends BaseSpanConverter {
+
+class Int64sSpanConverter {
 
     /**
      * Convert an OpenCensus Span to its Jaeger Thrift representation.
@@ -45,6 +32,8 @@ class SpanConverter extends BaseSpanConverter {
         $spanId = hexdec($span->spanId());
         $parentSpanId = hexdec($span->parentSpanId());
         list($highTraceId, $lowTraceId) = self::convertTraceId($span->traceId());
+
+        // die(var_dump($highTraceId, $lowTraceId));
 
         return new Span([
             'traceIdLow' => $lowTraceId,
@@ -130,10 +119,10 @@ class SpanConverter extends BaseSpanConverter {
         $method = '';
         switch (true) {
             case function_exists('bcadd'):
-                $method = 'bc_half_uuid_to_int64s';
+                $method = sprintf('\%s::bc_half_uuid_to_int64s', self::class);
                 break;
             case function_exists('gmp_add'):
-                $method = 'gmp_half_uuid_to_int64s';
+                $method = sprintf('\%s::gmp_half_uuid_to_int64s', self::class);
                 break;
             default:
                 throw new \Exception('Please install `php-bc` or `php-gmp` extensions for this to work.');
@@ -152,5 +141,31 @@ class SpanConverter extends BaseSpanConverter {
             0,
             2
         );
+    }
+
+    const MAX_INT_64s = '9223372036854775807';
+
+    private static function gmp_half_uuid_to_int64s($hex) {
+        $dec = 0;
+        $len = strlen($hex);
+        for ($i = 1; $i <= $len; $i++) {
+            $dec = gmp_add($dec, gmp_mul(strval(hexdec($hex[$i - 1])), gmp_pow('16', strval($len - $i))));
+        }
+        if (gmp_cmp($dec, self::MAX_INT_64s) > 0) {
+            $dec = gmp_sub(gmp_and($dec, self::MAX_INT_64s), gmp_add(self::MAX_INT_64s, '1'));
+        }
+        return intval($dec);
+    }
+
+    private static function bc_half_uuid_to_int64s($hex) {
+        $dec = 0;
+        $len = strlen($hex);
+        for ($i = 1; $i <= $len; $i++) {
+            $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
+        }
+        if (bccomp($dec, self::MAX_INT_64s) > 0) {
+            $dec = bcsub(bcsub($dec, self::MAX_INT_64s), bcadd(self::MAX_INT_64s, '2'));
+        }
+        return intval($dec);
     }
 }

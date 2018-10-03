@@ -13,7 +13,7 @@ class Controller extends AbstractController
 {
     public function index() {
         $span = Tracer::startSpan(['name' => 'controller.index.php']);
-        var_dump($span);
+        // var_dump($span);
         $scope = Tracer::withSpan($span);
 
         $data = '[]';
@@ -31,7 +31,7 @@ class Controller extends AbstractController
     }
 
     public function fetch() {
-        var_dump(getallheaders());
+        // var_dump(getallheaders());
         $span = Tracer::startSpan(['name' => 'controller.fetch.php']);
         $scope = Tracer::withSpan($span);
 

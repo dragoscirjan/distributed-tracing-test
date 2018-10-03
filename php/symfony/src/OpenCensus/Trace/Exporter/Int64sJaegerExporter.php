@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-namespace OpenCensus\Trace\Exporter;
+namespace App\OpenCensus\Trace\Exporter;
 
-require_once __DIR__ . '/Thrift/Agent.php';
-require_once __DIR__ . '/Thrift/Types.php';
+require_once __DIR__ . '/../../../../vendor/opencensus/opencensus-exporter-jaeger/src/Thrift/Agent.php';
+require_once __DIR__ . '/../../../../vendor/opencensus/opencensus-exporter-jaeger/src/Thrift/Types.php';
 
-use OpenCensus\Trace\Exporter\Jaeger\SpanConverter;
+use App\OpenCensus\Trace\Exporter\Jaeger\Int64sSpanConverter;
+
+use OpenCensus\Trace\Exporter\ExporterInterface;
 use OpenCensus\Trace\Exporter\Jaeger\UDPClient;
 
 use Jaeger\Thrift\Agent\AgentIf;
@@ -31,7 +33,7 @@ use Jaeger\Thrift\Process;
  * This implementation of the ExporterInterface talks to a Jaeger Agent backend
  * using Thrift (Compact Protocol) over UDP.
  */
-class JaegerExporter implements ExporterInterface
+class Int64sJaegerExporter implements ExporterInterface
 {
     /**
      * @var string
@@ -78,7 +80,7 @@ class JaegerExporter implements ExporterInterface
         $this->port = (int) $options['port'];
         $this->process = new Process([
             'serviceName' => $serviceName,
-            'tags' => SpanConverter::convertTags($options['tags'])
+            'tags' => Int64sSpanConverter::convertTags($options['tags'])
         ]);
         $this->client = $options['client'];
     }
@@ -96,9 +98,10 @@ class JaegerExporter implements ExporterInterface
         }
 
         $client = $this->client ?: new UDPClient($this->host, $this->port);
+
         $batch = new Batch([
             'process' => $this->process,
-            'spans' => array_map([SpanConverter::class, 'convertSpan'], $spans)
+            'spans' => array_map(sprintf('\%s::convertSpan', Int64sSpanConverter::class), $spans)
         ]);
 
         $client->emitBatch($batch);

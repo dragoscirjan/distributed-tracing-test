@@ -6,8 +6,9 @@ use Monolog\Logger;
 
 use Ramsey\Uuid\Uuid;
 
-use App\OpenCensus\Trace\Exporter\JaegerExporter;
+use App\OpenCensus\Trace\Exporter\Int64sJaegerExporter;
 
+use OpenCensus\Trace\Exporter\JaegerExporter;
 use OpenCensus\Trace\Integrations\Doctrine;
 use OpenCensus\Trace\Integrations\Symfony;
 use OpenCensus\Trace\Propagator\HttpHeaderPropagator;
@@ -24,7 +25,8 @@ class Bundle extends BaseBundle
 
     public function tracerStart() {
         // Start the request tracing for this request
-        $exporter = new JaegerExporter('my-jaeger', [
+        // $exporter = new JaegerExporter('my-jaeger', [
+        $exporter = new Int64sJaegerExporter('my-jaeger', [
             'host' => 'distributed-tracing-test-jaeger'
         ]);
         Tracer::start($exporter);
