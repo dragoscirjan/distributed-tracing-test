@@ -32,7 +32,7 @@ RUN apk add autoconf alpine-sdk \
     && apk del alpine-sdk
 
 
-USER code
+# USER code
 
 WORKDIR /home/code
 

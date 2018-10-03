@@ -10,5 +10,4 @@ composer install
 # sed -i "s/DATABASE_URL=.*/DATABASE_URL=mysql:\/\/test:weltest@distributed-tracing-test-mysql:3306\/test/g" .env
 # php bin/console doctrine:schema:update --force || php bin/console doctrine:schema:create || exit 1
 
-# php bin/console server:start 0.0.0.0:8000 -n -vvv
 php bin/console server:run 0.0.0.0:8000 -n -vvv
