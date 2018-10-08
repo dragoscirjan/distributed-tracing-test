@@ -1,9 +1,9 @@
 #! /bin/bash
 
 # export TEST_CASE_FOLDER=${1:-}
-export TEST_CASE_FOLDER=${1:-php-sym_jaeger-census}
+# export TEST_CASE_FOLDER=${1:-php-sym_jaeger-census}
 # export TEST_CASE_FOLDER=${1:-py-cherry_jinja2-census}
-# export TEST_CASE_FOLDER=${1:-php-sym_py-cherry_jaeger-census}
+export TEST_CASE_FOLDER=${1:-php-sym_py-cherry_jaeger-census}
 
 pip install -r requirements.txt
 python build.py -p "$TEST_CASE_FOLDER"
