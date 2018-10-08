@@ -1,0 +1,128 @@
+version: '3.6'
+services:
+  # jaeger
+  distributed-tracing-test-jaeger: 
+    environment:
+      COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+    image: jaegertracing/all-in-one:1.6
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "9411:9411"
+    restart: on-failure
+
+  # # mysql
+  # distributed-tracing-test-mysql: 
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: weltest
+  #     MYSQL_DATABASE: test
+  #     MYSQL_USER: test
+  #     MYSQL_PASSWORD: weltest
+  #   image: mysql:5.7
+  #   restart: on-failure
+
+{%- if 'php-' in project %}
+  # php server
+  # https://gist.github.com/chadrien/c90927ec2d160ffea9c4 (xdebug)
+  # https://stackoverflow.com/questions/17157721/how-to-get-a-docker-containers-ip-address-from-the-host/34863088 (get container ip - thus docker net if)
+  distributed-tracing-test-php:
+    # entrypoint: tail -f /dev/null
+    environment:
+      XDEBUG_CONFIG: remote_host=10.97.16.193
+    depends_on:
+      - distributed-tracing-test-jaeger
+    build:
+      context: ./$TEST_CASE_FOLDER/docker/php
+      dockerfile: Dockerfile
+    links:
+      - distributed-tracing-test-jaeger
+      - distributed-tracing-test-php2
+      {% if 'py-' in project %}- distributed-tracing-test-py2{% endif %}
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./$TEST_CASE_FOLDER
+        target: /home/code
+      - type: bind
+        source: ./$TEST_CASE_FOLDER/../php/symfony/src/Controller/Trace
+        target: /home/code/src/Controller/Trace
+      - type: bind
+        source: ./$TEST_CASE_FOLDER/../php/symfony/src/OpenCensus
+        target: /home/code/src/OpenCensus
+      - type: bind
+        source: ./xdebug.ini
+        target: /usr/local/etc/php/conf.d/xdebug.ini
+
+  distributed-tracing-test-php2:
+    # entrypoint: tail -f /dev/null
+    environment:
+      XDEBUG_CONFIG: remote_host=10.97.16.193
+    depends_on:
+      - distributed-tracing-test-jaeger
+    build:
+      context: ./$TEST_CASE_FOLDER/docker/php
+      dockerfile: Dockerfile
+    links:
+      - distributed-tracing-test-jaeger
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./$TEST_CASE_FOLDER
+        target: /home/code
+      - type: bind
+        source: ./$TEST_CASE_FOLDER/../php/symfony/src/Controller/Trace
+        target: /home/code/src/Controller/Trace
+      - type: bind
+        source: ./$TEST_CASE_FOLDER/../php/symfony/src/OpenCensus
+        target: /home/code/src/OpenCensus
+      - type: bind
+        source: ./xdebug.ini
+        target: /usr/local/etc/php/conf.d/xdebug.ini
+{% endif -%}
+
+{%- if 'py-' in project %}
+  # python server
+  distributed-tracing-test-py:
+    depends_on:
+      - distributed-tracing-test-jaeger
+    build:
+      context: ./$TEST_CASE_FOLDER/docker/py
+      dockerfile: Dockerfile
+    links:
+      - distributed-tracing-test-jaeger
+      {% if 'php-' in project %}- distributed-tracing-test-php2{% endif %}
+      - distributed-tracing-test-py2
+    ports:
+      - "8099:8099"
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./$TEST_CASE_FOLDER
+        target: /home/code
+      - type: bind
+        source: ./$TEST_CASE_FOLDER/../py/tracer
+        target: /home/code/tracer
+
+  distributed-tracing-test-py2:
+    depends_on:
+      - distributed-tracing-test-jaeger
+    build:
+      context: ./$TEST_CASE_FOLDER/docker/py
+      dockerfile: Dockerfile
+    links:
+      - distributed-tracing-test-jaeger
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./$TEST_CASE_FOLDER
+        target: /home/code
+      - type: bind
+        source: ./$TEST_CASE_FOLDER/../py/tracer
+        target: /home/code/tracer
+{% endif -%}

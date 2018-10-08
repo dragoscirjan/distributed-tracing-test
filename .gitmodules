@@ -1,0 +1,9 @@
+[submodule "opencensus/opencensus-python"]
+	path = opencensus/opencensus-python
+	url = https://github.com/census-instrumentation/opencensus-python
+[submodule "opencensus/opencensus-php"]
+	path = opencensus/opencensus-php
+	url = https://github.com/census-instrumentation/opencensus-php
+[submodule "opencensus/opencensus-php-exporter-jaeger"]
+	path = opencensus/opencensus-php-exporter-jaeger
+	url = https://github.com/census-ecosystem/opencensus-php-exporter-jaeger

@@ -1,0 +1,24 @@
+FROM python:3.5-alpine
+
+RUN mkdir /home/code \
+    && addgroup code \
+    && adduser -D -h /home/code -G code code \
+    && chown code:code /home/code
+
+RUN pip install requests jinja2
+{% if '-cherry' in project -%}
+
+RUN pip install cherrypy
+{%- endif %}
+{% if '-census' in project -%}
+
+RUN pip install opencensus thrift
+{%- endif %}
+
+# USER code
+
+WORKDIR /home/code
+
+EXPOSE 8099
+
+CMD [ "sh", "/home/code/run-server-py.sh" ]
